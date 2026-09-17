@@ -4,6 +4,14 @@ Complete frame interpolation automation between After Effects and SVFI.
 
 A panel inside After Effects that renders, launches SVFI in the background, waits for it to finish, and reimports the processed clip automatically aligned. All with two clicks, without freezing the program, and without touching the command line.
 
+### ⚠️ Single-Task Pipeline
+
+This pipeline is intentionally built to process **one clip at a time**.
+
+This is not just a GPU limitation — it's how the pipeline is architected. The entire flow (`ae_svfi_input.txt` / `svfi_output.txt` / `carpeta_actual.txt` / preset) is bound to a single working folder and a single orchestration instance. Running two comps at once would overwrite the I/O files and corrupt the current job.
+
+To process another clip, wait for the current one to finish, then click `Render & Process` again.
+
 ## Features
 
 - Render and process with a single button. Select the composition, click, and the system does the rest.
