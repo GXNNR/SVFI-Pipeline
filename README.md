@@ -29,9 +29,34 @@ A panel inside After Effects that renders, launches SVFI in the background, wait
 2. Install SVFI from Steam and open it once.
 3. Create a file named `steam_appid.txt` inside the SVFI folder with the exact content: `1692080`
 4. Create the "Clips RIFE" template in After Effects. Go to Edit > Templates > Output Module Templates. Duplicate an existing template and rename it to "Clips RIFE". Format: QuickTime, Codec: Animation or ProRes 422 HQ.
-5. Copy the project folder wherever you want.
+5. Copy the project folder wherever you want. The recommended location is:
+   ```
+   C:\Program Files\Adobe\Adobe After Effects 2026\Support Files\Scripts\SVFI project
+   ```
 6. Run `Config.bat` and press Enter on the 3 prompts.
-7. Open After Effects and load `SVFI_Panel.jsx` from File > Scripts > Run Script File.
+7. **Grant folder permissions** (required, see below).
+8. Open After Effects and load `SVFI_Panel.jsx` from File > Scripts > Run Script File.
+
+### ⚠️ Folder Permissions (Required)
+
+After Effects' `Support Files\Scripts` folder is **read-only** for normal users, so the panel can't write the temporary files it needs to launch SVFI. If you don't grant permissions, the panel opens but nothing happens when you click "Render and Process" — no error, no log, nothing.
+
+**Open CMD as Administrator** and run this command (adjust the After Effects version if needed):
+
+```cmd
+icacls "C:\Program Files\Adobe\Adobe After Effects 2026\Support Files\Scripts\SVFI project" /grant "%USERNAME%":(OI)(CI)M /T
+```
+
+What it does:
+- `(OI)(CI)` → applies to files and subfolders
+- `M` → Modify (read + write + delete)
+- `/T` → recursive
+
+**To revert** (if you ever want to restore the default permissions):
+
+```cmd
+icacls "C:\Program Files\Adobe\Adobe After Effects 2026\Support Files\Scripts\SVFI project" /remove "%USERNAME%" /T
+```
 
 ## How to Use
 
@@ -66,6 +91,9 @@ A panel inside After Effects that renders, launches SVFI in the background, wait
 For more details, see the complete guides in Spanish and English included in the project.
 
 ## Troubleshooting
+
+Problem: The panel opens but nothing happens when I click "Render and Process".
+Solution: You skipped the folder permissions step. See [Folder Permissions](#-folder-permissions-required) above and run the `icacls` command as Administrator.
 
 Problem: The panel says "Template Clips RIFE not found".
 Solution: Create the template in After Effects or change the name in SVFI_Panel.jsx.
