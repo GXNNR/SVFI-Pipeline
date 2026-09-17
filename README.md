@@ -69,12 +69,14 @@ icacls "C:\Program Files\Adobe\Adobe After Effects 2026\Support Files\Scripts\SV
 ## How to Use
 
 1. Open the SVFI Pipeline panel in After Effects.
-2. Click "Select Folder..." and choose where you want the temporary files.
-3. Select the layer you want to process in the timeline.
-4. Click "Render and Process" and type a name for the file.
-5. Keep working in After Effects normally while SVFI processes.
-6. When the panel says "SVFI finished, ready to load", select the original layer and click "Load Result".
-7. The processed clip appears aligned right above the original layer.
+2. Click **"Select Folder..."** and choose where you want the temporary files.
+3. Apply **Time Remapping** to the clip you want to process.
+4. **Pre-compose the clip**, then open the precomposition.
+5. Click **"Render and Process"** and type a name for the file.
+6. Keep working in After Effects normally while SVFI processes.
+7. When the panel says **"SVFI finished, ready to load"**, select the original layer and click **"Load Result"**.
+8. The processed clip appears aligned right above the original layer.
+
 
 ## Project Files
 
