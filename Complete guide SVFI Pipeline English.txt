@@ -1,0 +1,338 @@
+============================================================
+SVFI PIPELINE - COMPLETE GUIDE
+Frame interpolation automation between
+After Effects and SVFI
+======================
+
+## INDEX
+
+1. What it is and how it works
+2. Required dependencies
+3. Step-by-step installation
+4. Project files
+5. How to use the panel
+6. Required manual changes
+7. Config.bat and Clean.bat
+8. Troubleshooting
+9. Recommendations
+
+---
+
+1. WHAT IT IS AND HOW IT WORKS
+
+---
+
+SVFI Pipeline is a tool that automates the entire frame
+interpolation workflow between After Effects and SVFI.
+
+Normal workflow (without the tool):
+AE -> export -> open SVFI -> load video -> wait
+-> close SVFI -> import video into AE -> align manually
+
+Workflow with SVFI Pipeline:
+AE -> "Render and Process" button -> SVFI processes automatically
+-> "Load Result" button -> clip is aligned automatically
+
+The system uses 3 components:
+
+* SVFI_Panel.jsx       -> After Effects panel
+* svfi_orquestador.py  -> Python orchestrator (launches SVFI, waits, writes result)
+* lanzar_svfi.vbs      -> Launcher that prevents AE from freezing
+
+---
+
+2. REQUIRED DEPENDENCIES
+
+---
+
+[ ] Windows 10 or 11
+[ ] After Effects CC 2018 or higher
+[ ] Python 3.8+ (installed from python.org, with "Add to PATH")
+[ ] SVFI from Steam (not the standalone version)
+[ ] "Clips RIFE" template created in After Effects
+[ ] steam_appid.txt file in the SVFI folder
+
+IMPORTANT - Python:
+
+* Download it from python.org, NOT from Microsoft Store
+* Check "Add Python to PATH" during installation
+* Verify in CMD: where pythonw
+* It must return a valid path
+
+IMPORTANT - steam_appid.txt:
+
+* Create a text file in the SVFI folder
+* Exact content: 1692080
+* No spaces and no extra line breaks
+* Example path:
+  D:\SteamLibrary\steamapps\common\SVFI\steam_appid.txt
+
+---
+
+3. STEP-BY-STEP INSTALLATION
+
+---
+
+STEP 1 - Install Python
+
+* Download Python 3.8+ from python.org
+* Check "Add Python to PATH"
+* Install it
+* Open CMD and verify: where pythonw
+
+STEP 2 - Install SVFI
+
+* Buy and install SVFI from Steam
+* Open SVFI once from Steam so it can download its models
+* Create steam_appid.txt with the exact content: 1692080
+
+STEP 3 - Create the "Clips RIFE" template in AE
+
+* Open After Effects
+* Go to Edit > Templates > Output Module Templates
+* Select an existing template and click "Duplicate"
+* Rename it to: Clips RIFE
+* Recommended settings:
+  Format: QuickTime
+  Codec: Animation or ProRes 422 HQ
+  Channels: RGB
+  Depth: Millions of Colors
+* Save
+
+STEP 4 - Configure the project
+
+* Copy the project folder wherever you want
+* Run Config.bat (double-click)
+* Press Enter at all 3 prompts
+* Done
+
+STEP 5 - Load the panel in AE
+
+* Open After Effects
+* Go to Edit > Preferences > Scripting & Expressions
+* Enable:
+  "Allow Scripts to Write Files and Access Network"
+* Run SVFI_Panel.jsx from:
+  File > Scripts > Run Script File
+
+---
+
+4. PROJECT FILES
+
+---
+
+These files MUST be together in the same folder:
+
+SVFI_Panel.jsx          After Effects panel
+svfi_orquestador.py     Python orchestrator
+lanzar_svfi.vbs         VBS launcher (prevents AE from freezing)
+config.txt              SVFI and preset paths
+mi_preset_svfi.ini      SVFI configuration
+Config.bat              Automatic configuration
+Clean.bat               Temporary file cleanup
+
+Files generated automatically:
+
+carpeta_actual.txt      Current work folder
+vbs_log.txt             Launcher log
+ae_svfi_input.txt       Video name to process
+svfi_output.txt         Processed video path
+svfi_log.txt            Orchestrator log
+
+---
+
+5. HOW TO USE THE PANEL
+
+---
+
+STEP 1
+Open the SVFI Pipeline panel in After Effects
+
+STEP 2
+Click "Select Folder..."
+Choose the work folder
+(the panel remembers it for next time)
+
+STEP 3
+In the AE timeline, select the layer you want to process
+
+STEP 4
+Click "Render and Process"
+Enter a name for the file
+Wait for AE to render (blocking, but usually quick)
+The panel will launch SVFI in the background
+
+STEP 5
+You can continue using AE normally
+When SVFI finishes, the panel will say:
+"SVFI finished! Ready to load"
+
+STEP 6
+Select the original layer
+Click "Load Result"
+The processed clip will appear aligned above the original
+
+---
+
+6. REQUIRED MANUAL CHANGES
+
+---
+
+NOTE:
+Config.bat handles many of these settings automatically.
+
+You only need to change them manually if:
+- Config.bat does not detect your paths correctly
+- You want to use a different template or preset
+- You want to change the output filename suffix
+
+A) CHANGE THE AE TEMPLATE
+
+AUTOMATIC: NO (always manual)
+WHEN: If you want to use a template other than "Clips RIFE"
+
+1. Open SVFI_Panel.jsx with Notepad
+2. Press Ctrl+B (or go to Edit > Find)
+3. Search for: applyTemplate
+4. Change "Clips RIFE" to the name of your template
+5. Save as UTF-8 without BOM
+
+B) CHANGE THE PATHS (SVFI AND PRESET)
+
+AUTOMATIC: YES (handled by Config.bat)
+MANUAL: Only if Config.bat fails or does not detect the paths correctly
+
+The paths are stored in config.txt.
+
+To edit them manually:
+
+1. Open config.txt with Notepad
+2. You will see two lines:
+   SVFI_PATH=...
+   PRESET_PATH=...
+3. Change whatever you need
+4. Save as UTF-8 without BOM
+
+TIP:
+Press F3 in Notepad to quickly search for the line
+you want to edit.
+
+C) CHANGE THE SVFI PRESET
+
+AUTOMATIC: NO (the preset itself is configured manually)
+NOTE: The preset PATH is handled by Config.bat,
+but the CONTENT of the .ini file is configured manually.
+
+1. Open SVFI
+2. Configure the parameters you want
+3. Start a test task with any video
+4. Go to: SVFI\Configs\
+5. Copy the most recent .ini file (several KB in size)
+6. Rename it to: mi_preset_svfi.ini
+7. Put it in the project folder
+8. Open it with Notepad and DELETE the line that
+   starts with:
+   gui_inputs=
+9. Save
+
+D) CHANGE THE WORK FOLDER
+
+AUTOMATIC: YES (from the panel)
+WHEN: Only if you want to change the current work folder
+
+From the panel:
+Click "Select Folder..."
+
+You do not need to edit anything manually.
+
+E) CHANGE THE OUTPUT FILE NAME
+
+AUTOMATIC: NO (always manual)
+WHEN: If you want to use a different output suffix
+
+The script generates names like:
+name_ae_task.mov
+
+To change the suffix:
+
+1. Open SVFI_Panel.jsx with Notepad
+2. Press F3 and search for: ae_task
+3. Change "ae_task" to the suffix you want
+4. Save as UTF-8 without BOM
+
+---
+
+7. CONFIG.BAT AND CLEAN.BAT
+
+---
+
+CONFIG.BAT - Automatic configuration
+
+What it does:
+
+* Asks for the 3 paths (pythonw, SVFI, preset)
+* Regenerates config.txt with the new paths
+* Regenerates lanzar_svfi.vbs with the new pythonw path
+* NEVER modifies svfi_orquestador.py
+
+When to use it:
+
+* When changing PCs
+* When moving the project folder
+* When reinstalling Python or SVFI
+* When changing the preset location
+* When one of the configured paths stops working
+
+How to use it:
+
+1. Double-click Config.bat
+2. Press Enter at each prompt
+   (or enter the new path if it was not detected)
+3. Done
+
+If Config.bat fails:
+
+* Edit config.txt manually with Notepad
+* Edit lanzar_svfi.vbs manually with Notepad
+* Both are plain text files
+
+CLEAN.BAT - Temporary file cleanup
+
+What it does:
+
+* Deletes temporary files from the folder
+* Preserves these files:
+  SVFI_Panel.jsx
+  svfi_orquestador.py
+  mi_preset_svfi.ini
+  lanzar_svfi.vbs
+  config.txt
+  Clean.bat
+  Config.bat
+
+When to use it:
+
+* When the folder contains too many temporary files
+* Before copying the project to another PC
+* When you want to start fresh
+
+How to use it:
+
+1. Double-click Clean.bat
+2. Done (it runs and closes automatically)
+
+---
+
+8. TROUBLESHOOTING
+
+---
+
+PROBLEM: The panel says "Template 'Clips RIFE' not found"
+CAUSE: The template does not exist in AE
+SOLUTION:
+
+* Create the template following STEP 3
+* Or change the template name in SVFI_Panel.jsx
+
+PROBLEM: The panel says "Final file does not exist"
+CAUSE: SVFI did
