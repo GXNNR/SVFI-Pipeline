@@ -103,9 +103,14 @@ function svfi_render(argsStr) {
     if (!L.enabled) { return svfi__str({ ok: false, error: 'The layer is hidden (video switch off).' }); }
 
     fd = comp.frameDuration;
-    start = Math.max(L.inPoint, 0);
-    end = Math.min(L.outPoint, comp.duration);
-    if (end - start < fd) { return svfi__str({ ok: false, error: 'The layer is outside the composition time range.' }); }
+    // Rango en frames enteros de la comp. Los tiempos en segundos (p.ej. 48 f a 23.976 = 2.0020020...)
+    // no son exactos: si quedan una milesima antes, AE renderiza un frame de mas (negro, sin la capa)
+    // al inicio o al final, y SVFI lo interpola como un fundido.
+    var sf = Math.round(Math.max(L.inPoint, 0) / fd);
+    var ef = Math.round(Math.min(L.outPoint, comp.duration) / fd);
+    if (ef - sf < 1) { return svfi__str({ ok: false, error: 'The layer is outside the composition time range.' }); }
+    start = sf * fd;
+    end = ef * fd;
 
     idx = L.index;
     n = comp.numLayers;
@@ -132,8 +137,9 @@ function svfi_render(argsStr) {
         }
 
         rqItem = rq.items.add(comp);
-        rqItem.timeSpanStart = start;
-        rqItem.timeSpanDuration = end - start;
+        // Un poco hacia dentro del primer y del ultimo frame, para que AE no redondee hacia afuera
+        rqItem.timeSpanStart = start + fd * 0.01;
+        rqItem.timeSpanDuration = (end - start) - fd * 0.02;
         om = rqItem.outputModule(1);
         try { om.applyTemplate(a.template); }
         catch (eT) { throw new Error('Output module template "' + a.template + '" not found. Create it in Edit > Templates > Output Module.'); }
@@ -311,8 +317,27 @@ function svfi__dependents(comp, L) {
     return null;
 }
 
+// Auto-comp: precompone el clip a sus propios fps (recorte exacto por frame).
+// Con fix, quita los frames repetidos que deja SVFI al inicio y al final y ajusta la duracion.
+function svfi__autoComp(foot, folder, a) {
+    var fps = foot.frameRate, frames, s = 0, e = 0, dur, pc, L, note = '';
+    if (!fps || fps <= 0) { fps = 30; }
+    frames = Math.round(foot.duration * fps);
+    if (a.compFix) {
+        s = Math.max(0, parseInt(a.trimStart, 10) || 0);
+        e = Math.max(0, parseInt(a.trimEnd, 10) || 0);
+        if (frames - s - e < 1) { s = 0; e = 0; note = 'Clip too short for the frame fix: comp created without trimming.'; }
+    }
+    dur = (frames - s - e) / fps;
+    pc = app.project.items.addComp(foot.name.replace(/\.[^.]+$/, ''), foot.width, foot.height, foot.pixelAspect, dur, fps);
+    try { pc.parentFolder = folder; } catch (eF) { }
+    L = pc.layers.add(foot);
+    L.startTime = -s / fps;
+    return { comp: pc, note: note };
+}
+
 function svfi_import(argsStr) {
-    var a, f, comp, L, foot, nl, dep, note = '', err = null;
+    var a, f, comp, L, foot, nl, dep, note = '', err = null, folder, item, ac;
     try { a = svfi__parse(argsStr); } catch (eA) { return svfi__str({ ok: false, retry: false, error: 'Bad arguments.' }); }
     if (!app.project) { return svfi__str({ ok: false, retry: true, error: 'No project open.' }); }
 
@@ -328,12 +353,19 @@ function svfi_import(argsStr) {
     app.beginUndoGroup('SVFI Pipeline: import result');
     try {
         foot = app.project.importFile(new ImportOptions(f));
-        try { foot.parentFolder = svfi__findFolder(a.folderName || 'SVFI Results'); } catch (eFo) { }
+        folder = svfi__findFolder(a.folderName || 'SVFI Results');
+        try { foot.parentFolder = folder; } catch (eFo) { }
+        item = foot;
+        if (a.autoComp) {
+            ac = svfi__autoComp(foot, folder, a);
+            item = ac.comp;
+            if (ac.note) { note = ac.note; }
+        }
 
         if (!comp) {
             note = 'Composition not found: result imported to the project only.';
         } else {
-            nl = comp.layers.add(foot);
+            nl = comp.layers.add(item);
             nl.startTime = a.inPoint;
             if (L) {
                 nl.moveBefore(L);
@@ -341,7 +373,7 @@ function svfi_import(argsStr) {
                 try { nl.label = L.label; } catch (eLb) { }
                 if (a.deleteOriginal) {
                     dep = svfi__dependents(comp, L);
-                    if (dep) { L.enabled = false; note = 'Original layer kept (hidden) because ' + dep + '.'; }
+                    if (dep) { L.enabled = false; note = (note ? note + ' ' : '') + 'Original layer kept (hidden) because ' + dep + '.'; }
                     else { L.remove(); }
                 }
             } else {

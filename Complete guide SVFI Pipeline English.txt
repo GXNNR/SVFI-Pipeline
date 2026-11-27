@@ -1,5 +1,5 @@
 ============================================================
-SVFI PIPELINE 2.0 - COMPLETE GUIDE
+SVFI PIPELINE 2.1 - COMPLETE GUIDE
 Frame interpolation automation between
 After Effects and SVFI
 ============================================================
@@ -138,6 +138,10 @@ Delete the original layer after importing
   ON by default. If the original layer is a parent of other
   layers or a track matte, it is hidden instead of deleted.
 
+Frame fix: repeated frames to remove
+  Start (default 1) and End (default 7), counted in frames of
+  the SVFI clip. Used by "Comp + fix frames".
+
 Max SVFI time per clip
   If SVFI takes longer than this, the job is aborted.
 
@@ -145,6 +149,17 @@ Auto-import (switch in the main card)
   ON: each result is imported automatically, even with the
       panel closed.
   OFF: the job waits with an "Import" button.
+
+Auto-comp (switch in the main card)
+  ON: each imported clip is precomposed at its own frame rate
+      (for example 191.808 fps), so every interpolated frame is
+      kept and trims are exact.
+      Comp only        Just the precomp, full clip.
+      Comp + fix frames  SVFI leaves repeated frames at the start
+                         and end of the clip. The precomp removes
+                         them (1 at the start, 7 at the end by
+                         default) and its duration is adjusted.
+  OFF: the clip is imported directly, without a precomp.
 
 ------------------------------------------------------------
 5. HOW TO USE IT
@@ -172,6 +187,8 @@ STEP 5
 With Auto-import ON, each clip replaces its layer when
 SVFI finishes. The imported file is called <layer>_SVFI.mov
 and goes into the "SVFI Results" folder of the project.
+With Auto-comp ON, the layer is a precomp called <layer>_SVFI
+(also in "SVFI Results") that contains the clip.
 
 ------------------------------------------------------------
 6. THE QUEUE

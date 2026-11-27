@@ -3,7 +3,7 @@ chcp 65001 >nul
 setlocal
 if /I "%~1"=="/scripts" goto :scripts
 
-echo === SVFI Pipeline 2.0.0 - install ===
+echo === SVFI Pipeline 2.1.0 - install ===
 echo.
 REM 1) Extension (current user, no admin needed)
 REM Allows unsigned extensions (required for custom CEP extensions)

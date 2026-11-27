@@ -1,5 +1,5 @@
 ============================================================
-SVFI PIPELINE 2.0 - GUÍA COMPLETA
+SVFI PIPELINE 2.1 - GUÍA COMPLETA
 Automatización de interpolación de frames entre
 After Effects y SVFI
 ============================================================
@@ -137,12 +137,27 @@ Delete the original layer after importing
   Activado por defecto. Si la capa original es padre de otras
   capas o un track matte, se oculta en vez de borrarse.
 
+Frame fix: repeated frames to remove
+  Start (por defecto 1) y End (por defecto 7), contados en frames
+  del clip de SVFI. Lo usa "Comp + fix frames".
+
 Max SVFI time per clip
   Si SVFI tarda más que esto, el trabajo se cancela.
 
 Auto-import (interruptor en la tarjeta principal)
   ON: cada resultado se importa solo, aunque el panel esté cerrado.
   OFF: el trabajo espera con un botón "Import".
+
+Auto-comp (interruptor en la tarjeta principal)
+  ON: cada clip importado se precompone a sus propios fps
+      (por ejemplo 191.808), así se conservan todos los frames
+      interpolados y los recortes son exactos.
+      Comp only          Solo la precomp, con el clip completo.
+      Comp + fix frames  SVFI deja frames repetidos al inicio y al
+                         final del clip. La precomp los quita (1 al
+                         inicio y 7 al final por defecto) y ajusta
+                         su duración.
+  OFF: el clip se importa directo, sin precomp.
 
 ------------------------------------------------------------
 5. CÓMO USARLO
@@ -169,6 +184,8 @@ PASO 5
 Con Auto-import en ON, cada clip reemplaza a su capa cuando
 SVFI termina. El archivo importado se llama <capa>_SVFI.mov
 y va a la carpeta "SVFI Results" del proyecto.
+Con Auto-comp en ON, la capa es una precomp llamada <capa>_SVFI
+(también en "SVFI Results") que contiene el clip.
 
 ------------------------------------------------------------
 6. LA COLA

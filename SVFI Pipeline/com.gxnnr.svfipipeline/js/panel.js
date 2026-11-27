@@ -37,6 +37,17 @@
         $('autoImport').checked = !!cfg.autoImport;
         $('autoState').textContent = cfg.autoImport ? 'ON' : 'OFF';
         $('autoState').className = cfg.autoImport ? '' : 'off';
+        $('autoComp').checked = !!cfg.autoComp;
+        $('compState').textContent = cfg.autoComp ? 'ON' : 'OFF';
+        $('compState').className = cfg.autoComp ? '' : 'off';
+        $('compMode').className = 'seg' + (cfg.autoComp ? '' : ' disabled');
+        var modeBtns = $('compMode').querySelectorAll('button');
+        for (var b = 0; b < modeBtns.length; b++) {
+            var isFix = modeBtns[b].getAttribute('data-mode') === 'fix';
+            modeBtns[b].className = (isFix === !!cfg.compFix) ? 'on' : '';
+        }
+        $('trimStart').value = cfg.trimStart;
+        $('trimEnd').value = cfg.trimEnd;
         if (!cfg.workFolder || !cfg.svfiPath) { $('settings').open = true; }
     }
 
@@ -69,6 +80,14 @@
         save({ maxMinutes: isNaN(v) ? 120 : Math.max(5, Math.min(1440, v)) });
     });
     $('autoImport').addEventListener('change', function () { save({ autoImport: this.checked }); });
+    $('autoComp').addEventListener('change', function () { save({ autoComp: this.checked }); });
+    $('compMode').addEventListener('click', function (ev) {
+        var b = ev.target.closest('button[data-mode]');
+        if (b) { save({ compFix: b.getAttribute('data-mode') === 'fix' }); }
+    });
+    function frames(v, def) { v = parseInt(v, 10); return isNaN(v) ? def : Math.max(0, Math.min(100, v)); }
+    $('trimStart').addEventListener('change', function () { save({ trimStart: frames(this.value, 1) }); });
+    $('trimEnd').addEventListener('change', function () { save({ trimEnd: frames(this.value, 7) }); });
 
     // ------------------------------------------------------------------ render
     function validate() {
@@ -198,12 +217,18 @@
         if (html !== lastQueueHtml) { $('queue').innerHTML = html; lastQueueHtml = html; }
     }
 
+    // Abre una carpeta o archivo con Windows (Explorador / programa por defecto).
+    // "start" desde cp.exec no siempre funciona dentro de CEP; explorer.exe directo si.
     function openPath(p) {
         if (!p) { return; }
+        if (!SVFI.exists(p)) { return msg('Not found: ' + p); }
         try {
-            if (process.platform === 'win32') { cp.exec('start "" "' + p + '"', { windowsHide: true }); }
-            else { cp.exec('open "' + p + '"'); }
-        } catch (e) { }
+            var child = (process.platform === 'win32')
+                ? cp.spawn('explorer.exe', [path.normalize(p)], { detached: true, stdio: 'ignore', windowsHide: false })
+                : cp.spawn('open', [p], { detached: true, stdio: 'ignore' });
+            child.on('error', function (e) { msg('Could not open: ' + e.message); });
+            child.unref();
+        } catch (e) { msg('Could not open: ' + e.message); }
     }
 
     $('queue').addEventListener('click', function (ev) {
@@ -228,7 +253,10 @@
     });
 
     $('btnOpenFolder').addEventListener('click', function () {
-        if (cfg.workFolder) { openPath(cfg.workFolder); } else { $('settings').open = true; }
+        cfg = SVFI.readConfig();
+        if (!cfg.workFolder) { $('settings').open = true; return msg('Choose a work folder in Settings.'); }
+        var jd = SVFI.jobsDir(cfg);
+        openPath(SVFI.exists(jd) ? jd : cfg.workFolder);
     });
 
     // ------------------------------------------------------------------ arranque

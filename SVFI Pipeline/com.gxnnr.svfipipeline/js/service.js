@@ -239,6 +239,7 @@
             file: job.result, compId: job.compId, compName: job.compName,
             layerId: job.layerId, layerIndex: job.layerIndex, layerName: job.layerName,
             inPoint: job.inPoint, deleteOriginal: cfg.deleteOriginal, folderName: 'SVFI Results',
+            autoComp: cfg.autoComp, compFix: cfg.compFix, trimStart: cfg.trimStart, trimEnd: cfg.trimEnd,
             pending: SVFI.pendingRestores(SVFI.listJobs(cfg))
         }, function (out) {
             if (!importing || importing.id !== job.id) { return; }

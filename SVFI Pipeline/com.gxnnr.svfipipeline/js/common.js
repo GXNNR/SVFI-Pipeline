@@ -12,7 +12,7 @@ var SVFI = (function () {
     var path = require('path');
     var os = require('os');
 
-    var VERSION = '2.0.0';
+    var VERSION = '2.1.0';
     var EXT_PANEL = 'com.gxnnr.svfipipeline.panel';
     var EXT_SERVICE = 'com.gxnnr.svfipipeline.service';
     var EVT_OPEN_PANEL = 'com.gxnnr.svfipipeline.openPanel';
@@ -74,6 +74,10 @@ var SVFI = (function () {
             template: 'Clips RIFE',
             autoImport: true,
             deleteOriginal: true,
+            autoComp: true,
+            compFix: true,
+            trimStart: 1,
+            trimEnd: 7,
             maxMinutes: 120
         };
     }

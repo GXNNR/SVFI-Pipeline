@@ -10,6 +10,7 @@ Select one or more layers, click **Render & Queue**, and keep working. After Eff
 - **No precomp needed.** The selected layer is rendered exactly as you see it in the comp: the panel solos it temporarily and renders only its in/out range. Your Solo switches, Work Area and Render Queue are restored afterwards.
 - **SVFI queue.** Render as many layers as you want in AE; SVFI processes them one by one outside AE (one at a time, so the GPU isn't overloaded).
 - **Auto-import (ON/OFF).** Each result is imported above its original layer, aligned in time, and the original layer is deleted (one Ctrl+Z restores it). If the original is a parent or a track matte, it is hidden instead of deleted.
+- **Auto-comp (ON/OFF).** Each imported clip is precomposed at its own frame rate. Choose **Comp only** or **Comp + fix frames**, which removes the repeated frames SVFI leaves at the start (1) and end (7) and adjusts the comp duration (both numbers editable in Settings).
 - **Works with the panel closed.** A small invisible background service runs the queue and imports results. It only touches After Effects when a result is ready, and if AE is busy (a dialog is open) it simply retries later.
 - **Clear errors.** If SVFI fails, the job is marked as an error with its reason and a log; it can be retried with one click.
 - **Your preset is never modified.** Each job uses its own copy, with its own output folder and the comp's real frame rate (keeping your preset's multiplier, e.g. x8).

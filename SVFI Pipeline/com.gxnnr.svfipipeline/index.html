@@ -23,6 +23,17 @@
         <div class="hint">Imports each result above its layer, even with this panel closed.</div>
       </div>
     </div>
+    <div class="row toggle-row">
+      <label class="switch"><input type="checkbox" id="autoComp"><span class="slider"></span></label>
+      <div class="grow1">
+        <div class="lbl">Auto-comp <b id="compState">ON</b></div>
+        <div class="hint">Precomposes each imported clip at its own frame rate.</div>
+      </div>
+    </div>
+    <div class="seg" id="compMode">
+      <button data-mode="comp">Comp only</button>
+      <button data-mode="fix">Comp + fix frames</button>
+    </div>
     <div id="msg" class="msg hidden"></div>
   </section>
 
@@ -56,6 +67,13 @@
     </div>
     <div class="field check">
       <label><input type="checkbox" id="deleteOriginal"> Delete the original layer after importing</label>
+    </div>
+    <div class="field">
+      <label>Frame fix: repeated frames to remove (SVFI frames)</label>
+      <div class="pick">
+        <span class="mini">Start</span><input id="trimStart" type="number" min="0" max="100">
+        <span class="mini">End</span><input id="trimEnd" type="number" min="0" max="100">
+      </div>
     </div>
     <div class="field">
       <label>Max SVFI time per clip (minutes)</label>

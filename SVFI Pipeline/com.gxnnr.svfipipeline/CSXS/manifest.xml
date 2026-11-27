@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="7.0" ExtensionBundleId="com.gxnnr.svfipipeline" ExtensionBundleVersion="2.0.0"
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.gxnnr.svfipipeline" ExtensionBundleVersion="2.1.0"
     ExtensionBundleName="SVFI Pipeline" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ExtensionList>
-    <Extension Id="com.gxnnr.svfipipeline.panel" Version="2.0.0"/>
-    <Extension Id="com.gxnnr.svfipipeline.service" Version="2.0.0"/>
+    <Extension Id="com.gxnnr.svfipipeline.panel" Version="2.1.0"/>
+    <Extension Id="com.gxnnr.svfipipeline.service" Version="2.1.0"/>
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>

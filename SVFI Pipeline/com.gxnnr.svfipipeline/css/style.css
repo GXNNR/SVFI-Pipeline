@@ -77,3 +77,11 @@ input[type=text], input:not([type]), input[type=number] {
     flex: 1; min-width: 0; font: inherit; font-size: 11px; color: #ddd;
     background: #1d1d1d; border: 1px solid #3a3a3a; border-radius: 3px; padding: 4px 6px;
 }
+
+.grow1 { flex: 1; }
+.seg { display: flex; margin-top: 6px; margin-left: 40px; border: 1px solid #4a4a4a; border-radius: 4px; overflow: hidden; }
+.seg button { flex: 1; border: 0; border-radius: 0; background: transparent; color: #aaa; padding: 4px 6px; font-size: 11px; }
+.seg button + button { border-left: 1px solid #4a4a4a; }
+.seg button.on { background: #3a3a3a; color: #fff; }
+.seg.disabled { opacity: .4; pointer-events: none; }
+.mini { font-size: 10px; color: #888; align-self: center; }
