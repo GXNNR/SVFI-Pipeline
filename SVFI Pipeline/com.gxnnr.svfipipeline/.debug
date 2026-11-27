@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionList>
+  <Extension Id="com.gxnnr.svfipipeline.panel">
+    <HostList><Host Name="AEFT" Port="8102"/></HostList>
+  </Extension>
+  <Extension Id="com.gxnnr.svfipipeline.service">
+    <HostList><Host Name="AEFT" Port="8103"/></HostList>
+  </Extension>
+</ExtensionList>

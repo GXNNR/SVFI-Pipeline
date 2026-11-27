@@ -1,414 +1,295 @@
 ============================================================
-SVFI PIPELINE - GUIA COMPLETA
-Automatizacion de interpolacion de frames entre
+SVFI PIPELINE 2.0 - GUÍA COMPLETA
+Automatización de interpolación de frames entre
 After Effects y SVFI
-====================
+============================================================
 
-## INDICE
+## ÍNDICE
 
-1. Que es y como funciona
-2. Requisitos obligatorios
-3. Instalacion paso a paso
-4. Archivos del proyecto
-5. Como usar el panel
-6. Cambios manuales necesarios
-7. Config.bat y Clean.bat
-8. Solucion de problemas
-9. Recomendaciones
+1. Qué es y cómo funciona
+2. Requisitos
+3. Instalación
+4. Ajustes
+5. Cómo usarlo
+6. La cola
+7. Preset de SVFI propio
+8. Archivos y carpetas
+9. Solución de problemas
+10. Actualizar desde la versión 1.x
 
----
+------------------------------------------------------------
+1. QUÉ ES Y CÓMO FUNCIONA
+------------------------------------------------------------
 
-1. QUE ES Y COMO FUNCIONA
+SVFI Pipeline automatiza todo el ida y vuelta entre
+After Effects y SVFI.
 
----
+Sin la herramienta:
+AE -> exportar -> abrir SVFI -> cargar video -> esperar -> importar -> alinear
 
-SVFI Pipeline es una herramienta que automatiza todo el flujo
-de interpolacion de frames entre After Effects y SVFI.
+Con SVFI Pipeline:
+Seleccionar capas -> "Render & Queue" -> seguir trabajando
 
-Flujo normal (sin la herramienta):
-AE -> exportar -> abrir SVFI -> cargar video -> esperar
--> cerrar SVFI -> importar video en AE -> alinear manual
+La herramienta tiene 3 partes:
 
-Flujo con SVFI Pipeline:
-AE -> boton "Renderizar y Procesar" -> SVFI procesa solo
--> boton "Cargar Resultado" -> clip alineado automaticamente
+* Panel (Window > Extensions > SVFI Pipeline)
+  El botón, la cola y los ajustes.
 
-El sistema usa 3 piezas:
+* Servicio en segundo plano (invisible, arranca con After Effects)
+  Ejecuta SVFI de a un clip e importa cada resultado.
+  Sigue funcionando aunque el panel esté cerrado.
 
-* SVFI_Panel.jsx      -> Panel dentro de After Effects
-* svfi_orquestador.py -> Orquestador (lanza SVFI, espera, escribe resultado)
-* lanzar_svfi.vbs     -> Lanzador que evita que AE se congele
+* Lanzador (File > Scripts > SVFI_Pipeline.jsx)
+  Abre el panel. Se puede llamar desde otros lanzadores
+  de scripts, como NyaUIPanel.
 
----
+Qué pasa al pulsar el botón:
 
-2. REQUISITOS OBLIGATORIOS
+1. Cada capa seleccionada se convierte en un trabajo de la cola.
+2. AE renderiza las capas una tras otra, tal como se ven en
+   la comp. Para eso pone la capa en Solo temporalmente y
+   renderiza solo su rango de in/out. Tus Solo, el Work Area
+   y la Render Queue se restauran después.
+3. Cuando termina un render, ese clip pasa a SVFI.
+4. Cuando SVFI termina, el resultado se importa encima de la
+   capa original, alineado en el tiempo, y la capa original
+   se borra (Ctrl+Z la recupera).
 
----
+AE no se congela mientras renderiza, y nada toca After Effects
+mientras está renderizando.
 
-[ ] Windows 10 o 11
-[ ] After Effects CC 2018 o superior
-[ ] Python 3.8+ (instalado desde python.org, con "Add to PATH")
-[ ] SVFI desde Steam (no la version standalone)
-[ ] Template "Clips RIFE" creado en After Effects
+------------------------------------------------------------
+2. REQUISITOS
+------------------------------------------------------------
+
+[ ] Windows 10 u 11
+[ ] After Effects 2019 (16.0) o más reciente
+[ ] SVFI de Steam
 [ ] Archivo steam_appid.txt en la carpeta de SVFI
+[ ] Plantilla de módulo de salida "Clips RIFE" en After Effects
 
-IMPORTANTE sobre Python:
+Ya NO hace falta Python.
 
-* Descargalo de python.org, NO de Microsoft Store
-* Marca la casilla "Add Python to PATH" durante la instalacion
-* Verifica en CMD: where pythonw
-* Debe devolver una ruta
+IMPORTANTE - steam_appid.txt:
+SVFI necesita este archivo para funcionar desde la línea de comandos.
+Créalo dentro de la carpeta de SVFI, por ejemplo:
+  D:\SteamLibrary\steamapps\common\SVFI\steam_appid.txt
+Con este contenido exacto (nada más):
+  1692080
 
-IMPORTANTE sobre steam_appid.txt:
+------------------------------------------------------------
+3. INSTALACIÓN
+------------------------------------------------------------
 
-* Crea un archivo de texto en la carpeta de SVFI
-* Contenido exacto: 1692080
-* Sin espacios, sin saltos de linea extra
-* Ejemplo de ruta: D:\SteamLibrary\steamapps\common\SVFI\steam_appid.txt
+PASO 1 - Instalar SVFI
+* Instala SVFI desde Steam y ábrelo una vez.
+* Crea steam_appid.txt con el contenido exacto: 1692080
 
----
+PASO 2 - Crear la plantilla "Clips RIFE" en AE
+* Edit > Templates > Output Module
+* Duplica una plantilla existente
+* Cámbiale el nombre a: Clips RIFE
+* Format: QuickTime
+* Codec: Animation o ProRes 422 HQ
+* OK
 
-3. INSTALACION PASO A PASO
+PASO 3 - Instalar la extensión
+* Cierra After Effects por completo.
+* Ejecuta SVFI Pipeline\INSTALL_Windows.bat
+* Windows pide permiso de administrador una vez: solo se usa
+  para copiar SVFI_Pipeline.jsx a la carpeta Scripts de cada
+  versión de After Effects que encuentre.
+  Si dices que no, el panel sigue funcionando desde
+  Window > Extensions.
 
----
+PASO 4 - Primer uso
+* Abre After Effects.
+* Window > Extensions > SVFI Pipeline
+  (o File > Scripts > SVFI_Pipeline.jsx)
+* El punto de arriba a la derecha debe estar verde:
+  "Service running".
+* Abre Settings y elige la carpeta de trabajo y la ruta
+  de one_line_shot_args.exe (ver sección 4).
 
-PASO 1 - Instalar Python
+Para desinstalar: ejecuta UNINSTALL_Windows.bat
 
-* Descarga Python 3.8+ de python.org
-* Marca "Add Python to PATH"
-* Instala
-* Abre CMD y verifica: where pythonw
+------------------------------------------------------------
+4. AJUSTES (Settings)
+------------------------------------------------------------
 
-PASO 2 - Instalar SVFI
+Work folder (carpeta de trabajo)
+  Donde se guardan los trabajos (renders, resultados de SVFI, logs).
+  Elige una carpeta en un disco con espacio libre.
 
-* Compra e instala SVFI desde Steam
-* Abre SVFI una vez desde Steam (para que descargue modelos)
-* Crea el archivo steam_appid.txt con el contenido 1692080
+SVFI (one_line_shot_args.exe)
+  Normalmente:
+  D:\SteamLibrary\steamapps\common\SVFI\one_line_shot_args.exe
 
-PASO 3 - Crear el template "Clips RIFE" en AE
+Preset .ini
+  La configuración de SVFI que se usa para cada clip. Por defecto
+  usa el preset incluido en la extensión. Ver la sección 7 para
+  usar uno propio.
 
-* Abre After Effects
-* Ve a Editar > Plantillas > Plantillas de modulo de salida
-* Selecciona un template existente y dale "Duplicar"
-* Renombralo a: Clips RIFE
-* Configuracion recomendada:
-  Formato: QuickTime
-  Codec: Animation o ProRes 422 HQ
-  Canales: RGB
-  Profundidad: Millones de colores
-* Guarda
+Output module template
+  Nombre de la plantilla de AE para renderizar. Por defecto: Clips RIFE
 
-PASO 4 - Configurar el proyecto
+Delete the original layer after importing
+  Activado por defecto. Si la capa original es padre de otras
+  capas o un track matte, se oculta en vez de borrarse.
 
-* Copia la carpeta del proyecto a donde quieras
-* Ejecuta Config.bat (doble clic)
-* Presiona Enter en las 3 preguntas
-* Listo
+Max SVFI time per clip
+  Si SVFI tarda más que esto, el trabajo se cancela.
 
-PASO 5 - Cargar el panel en AE
+Auto-import (interruptor en la tarjeta principal)
+  ON: cada resultado se importa solo, aunque el panel esté cerrado.
+  OFF: el trabajo espera con un botón "Import".
 
-* Abre After Effects
-* Ve a Editar > Preferencias > Scripting y expresiones
-* Activa: "Permitir que los scripts escriban archivos
-  y accedan a la red"
-* Ejecuta SVFI_Panel.jsx desde Archivo > Scripts >
-  Ejecutar archivo de script
-
----
-
-4. ARCHIVOS DEL PROYECTO
-
----
-
-Estos archivos DEBEN estar juntos en la misma carpeta:
-
-SVFI_Panel.jsx          Panel de After Effects
-svfi_orquestador.py     Orquestador de Python
-lanzar_svfi.vbs         Lanzador VBS (no congelar AE)
-config.txt              Rutas de SVFI y preset
-mi_preset_svfi.ini      Configuracion de SVFI
-Config.bat              Configuracion automatica
-Clean.bat               Limpieza de temporales
-
-Archivos que se generan automaticamente:
-carpeta_actual.txt      Carpeta de trabajo actual
-vbs_log.txt             Log del lanzador
-ae_svfi_input.txt       Nombre del video a procesar
-svfi_output.txt         Ruta del video procesado
-svfi_log.txt            Log del orquestador
-
----
-
-5. COMO USAR EL PANEL
-
----
+------------------------------------------------------------
+5. CÓMO USARLO
+------------------------------------------------------------
 
 PASO 1
-Abre el panel SVFI Pipeline en After Effects
+Aplica Time Remapping (o lo que necesites) al clip.
+Recorta la capa al fragmento que quieres: solo se renderiza
+el rango de in/out de la capa.
 
 PASO 2
-Click en "Seleccionar Carpeta..."
-Elige la carpeta de trabajo
-(el panel la recuerda para la proxima vez)
+Selecciona una o varias capas en el timeline.
 
 PASO 3
-En el timeline de AE, selecciona la capa que quieres procesar
+Pulsa "Render & Queue selected layers".
+Las cámaras, luces, nulls y capas ocultas se saltan
+(el panel te dice cuáles).
 
 PASO 4
-Click en "Renderizar y Procesar"
-Escribe un nombre para el archivo
-Espera a que AE renderice (bloqueante pero rapido)
-El panel lanzara SVFI en segundo plano
+Sigue trabajando. AE renderiza las capas una por una y luego
+vuelve a la comp. SVFI procesa la cola en segundo plano.
 
 PASO 5
-Puedes seguir usando AE normalmente
-Cuando SVFI termine, el panel dira:
-"SVFI termino! Listo para cargar"
+Con Auto-import en ON, cada clip reemplaza a su capa cuando
+SVFI termina. El archivo importado se llama <capa>_SVFI.mov
+y va a la carpeta "SVFI Results" del proyecto.
 
-PASO 6
-Selecciona el layer original
-Click en "Cargar Resultado"
-El clip procesado aparece alineado encima del original
+------------------------------------------------------------
+6. LA COLA
+------------------------------------------------------------
 
----
+Estados de un trabajo:
 
-6. CAMBIOS MANUALES NECESARIOS
+Waiting AE   Esperando su turno para renderizar en AE
+AE render    AE lo está renderizando
+Queued       Renderizado, esperando a SVFI
+SVFI         SVFI lo está procesando (se ve el progreso)
+Ready        Terminado, esperando para importarse
+Imported     Listo
+Error        Algo falló (se muestra el motivo)
+Cancelled    Cancelado por ti
 
----
+Botones:
 
-NOTA IMPORTANTE:
-Muchos de estos cambios los hace Config.bat automaticamente.
-Solo necesitas hacerlos a mano si:
-- Config.bat no detecta bien tus rutas
-- Quieres usar un template o preset distinto
-- Quieres cambiar el sufijo del nombre de archivo
+Cancel   Detiene un trabajo en espera o el proceso de SVFI
+Retry    Vuelve a ejecutar SVFI en un trabajo que falló
+Import   Importa un trabajo terminado (con Auto-import en OFF)
+Remove   Quita un trabajo terminado de la lista
+Log      Abre el svfi_log.txt del trabajo
+Folder   Abre la carpeta de trabajo
+Clean    Quita todos los trabajos terminados de la lista y borra
+         sus archivos temporales. Los resultados importados se
+         conservan, porque tu proyecto los usa.
 
-A) CAMBIAR EL TEMPLATE DE AE
-AUTOMATICO: NO (siempre manual)
-CUANDO: Si quieres usar un template distinto a "Clips RIFE"
-
-1. Abre SVFI_Panel.jsx con Bloc de notas
-2. Presiona Ctrl+B (o ve a Edicion > Buscar)
-3. Busca: applyTemplate
-4. Cambia "Clips RIFE" por el nombre de tu template
-5. Guarda como UTF-8 sin BOM
-
-B) CAMBIAR LAS RUTAS (SVFI y PRESET)
-AUTOMATICO: SI (lo hace Config.bat)
-CUANDO MANUAL: Solo si Config.bat falla o no detecta bien
-
-Las rutas estan en config.txt. Para editar a mano:
-
-1. Abre config.txt con Bloc de notas
-2. Veras dos lineas:
-   SVFI_PATH=...
-   PRESET_PATH=...
-3. Cambia lo que necesites
-4. Guarda (UTF-8 sin BOM)
-
-TIP: Presiona F3 en Bloc de notas para buscar
-rapidamente la linea que quieras.
-
-C) CAMBIAR EL PRESET DE SVFI
-AUTOMATICO: NO (el preset en si es manual)
-NOTA: La RUTA del preset la maneja Config.bat,
-pero el CONTENIDO del .ini es manual.
+------------------------------------------------------------
+7. PRESET DE SVFI PROPIO
+------------------------------------------------------------
 
 1. Abre SVFI
-2. Configura los parametros que quieras
+2. Configura los parámetros que quieras
 3. Inicia una tarea de prueba con cualquier video
 4. Ve a: SVFI\Configs\
-5. Copia el archivo .ini mas reciente (pesa varios KB)
-6. Renombralo a: mi_preset_svfi.ini
-7. Ponlo en la carpeta del proyecto
-8. Abrelo con Bloc de notas y BORRA la linea que
-   empieza con: gui_inputs=
-9. Guarda
+5. Copia el archivo .ini más reciente (pesa varios KB)
+6. Guárdalo fuera de la carpeta de la extensión,
+   por ejemplo: Documentos\SVFIPipeline\mi_preset.ini
+7. Ábrelo con el Bloc de notas y BORRA la línea que
+   empieza con:
+   gui_inputs=
+8. Guarda
+9. En el panel: Settings > Preset .ini > elige ese archivo
 
-D) CAMBIAR LA CARPETA DE TRABAJO
-AUTOMATICO: SI (desde el panel)
-CUANDO: Solo si quieres cambiar la carpeta actual
+No hace falta editar output_dir ni los fps: cada trabajo usa
+su propia copia del preset, con su propia carpeta de salida
+y los fps reales de la comp, manteniendo el multiplicador de
+tu preset (por ejemplo x8).
+Tu archivo de preset nunca se modifica.
 
-Desde el panel: click en "Seleccionar Carpeta..."
-No necesitas editar nada a mano.
+No edites el preset que está dentro de la carpeta de la
+extensión: al reinstalar se reemplaza.
 
-E) CAMBIAR EL NOMBRE DEL ARCHIVO DE SALIDA
-AUTOMATICO: NO (siempre manual)
-CUANDO: Si quieres un sufijo distinto al de SVFI
+------------------------------------------------------------
+8. ARCHIVOS Y CARPETAS
+------------------------------------------------------------
 
-El script genera nombres como: nombre_ae_task.mov
-Para cambiar el sufijo, edita SVFI_Panel.jsx:
+Documentos\SVFIPipeline\
+  config.json     Ajustes del panel
+  service.json    Estado del servicio
 
-1. Abre SVFI_Panel.jsx con Bloc de notas
-2. Presiona F3 y busca: ae_task
-3. Cambia "ae_task" por el sufijo que quieras
-4. Guarda como UTF-8 sin BOM
+<carpeta de trabajo>\SVFI_jobs\<trabajo>\
+  job.json        Información y estado del trabajo
+  <capa>.mov      El render de AE
+  preset.ini      La copia del preset usada en este trabajo
+  svfi_log.txt    Log completo (render de AE + SVFI)
+  out\            El resultado de SVFI (<capa>_SVFI.mov)
 
----
+%APPDATA%\Adobe\CEP\extensions\com.gxnnr.svfipipeline\
+  La extensión instalada.
 
-7. CONFIG.BAT Y CLEAN.BAT
+------------------------------------------------------------
+9. SOLUCIÓN DE PROBLEMAS
+------------------------------------------------------------
 
----
+PROBLEMA: "Service not detected" (punto rojo)
+SOLUCIÓN:
+* Reinicia After Effects.
+* Comprueba que exista este archivo:
+  %APPDATA%\Adobe\CEP\extensions\com.gxnnr.svfipipeline\CSXS\manifest.xml
+* Vuelve a ejecutar INSTALL_Windows.bat.
 
-CONFIG.BAT - Configuracion automatica
+PROBLEMA: El panel no aparece en Window > Extensions
+SOLUCIÓN:
+* Vuelve a ejecutar INSTALL_Windows.bat (activa las extensiones
+  sin firmar) y reinicia After Effects.
 
-Que hace:
+PROBLEMA: "Output module template ... not found"
+SOLUCIÓN:
+* Crea la plantilla (instalación, paso 2), o escribe el nombre
+  de tu plantilla en Settings.
 
-* Pregunta las 3 rutas (pythonw, SVFI, preset)
-* Regenera config.txt con las rutas nuevas
-* Regenera lanzar_svfi.vbs con la ruta nueva de pythonw
-* NUNCA toca svfi_orquestador.py (no puede corromperlo)
+PROBLEMA: Un trabajo termina en Error después de SVFI
+SOLUCIÓN:
+* Pulsa "Log" y lee el final del archivo.
+* Revisa steam_appid.txt y la ruta de SVFI.
+* Revisa que el preset no tenga la línea gui_inputs=.
 
-Cuando usarlo:
+PROBLEMA: La capa original no se borró
+CAUSA: Es padre de otras capas o un track matte.
+Se oculta en su lugar, para no romper nada.
 
-* Al cambiar de PC
-* Al mover la carpeta del proyecto a otro sitio
-* Al reinstalar Python o SVFI en otra ruta
-* Si alguna ruta deja de funcionar
+PROBLEMA: "After Effects error: Cannot run a script while
+a modal dialog is waiting for response"
+SOLUCIÓN:
+* SVFI Pipeline nunca le habla a AE mientras renderiza. Si
+  aparece, otro panel está llamando a AE durante el render.
+  Si usas NyaWatchTower, no vigiles la carpeta SVFI_jobs.
 
-Como usarlo:
+Consolas de depuración (Chrome, con AE abierto):
+  Panel:    http://localhost:8102
+  Servicio: http://localhost:8103
 
-1. Doble clic en Config.bat
-2. Presiona Enter en cada pregunta
-   (o escribe la nueva ruta si no la detecta)
-3. Listo
+------------------------------------------------------------
+10. ACTUALIZAR DESDE LA VERSIÓN 1.x
+------------------------------------------------------------
 
-Si Config.bat falla:
-
-* Edita config.txt a mano con Bloc de notas
-* Edita lanzar_svfi.vbs a mano con Bloc de notas
-* Ambos son texto plano, no hay riesgo
-
-CLEAN.BAT - Limpieza de temporales
-
-Que hace:
-
-* Borra todos los archivos temporales de la carpeta
-* Respeta estos archivos:
-  SVFI_Panel.jsx
-  svfi_orquestador.py
-  mi_preset_svfi.ini
-  lanzar_svfi.vbs
-  config.txt
-  Clean.bat
-  Config.bat
-
-Cuando usarlo:
-
-* Cuando la carpeta tenga muchos archivos basura
-* Antes de copiar el proyecto a otro PC
-* Cuando quieras empezar de cero
-
-Como usarlo:
-
-1. Doble clic en Clean.bat
-2. Listo (se ejecuta y se cierra solo)
-
----
-
-8. SOLUCION DE PROBLEMAS
-
----
-
-PROBLEMA: El panel dice "No se encuentra el template 'Clips RIFE'"
-CAUSA: No existe el template en AE
-SOLUCION:
-
-* Crea el template siguiendo el PASO 3
-* O cambia el nombre en SVFI_Panel.jsx
-
-PROBLEMA: El panel dice "El archivo final no existe"
-CAUSA: SVFI no genero el video o lo guardo en otro sitio
-SOLUCION:
-
-* Revisa svfi_log.txt en la carpeta de trabajo
-* Verifica que SVFI tenga el preset correcto
-* Prueba el comando de SVFI manualmente en CMD
-
-PROBLEMA: El panel se congela al renderizar
-CAUSA: No se esta usando el lanzador .vbs
-SOLUCION:
-
-* Verifica que SVFI_Panel.jsx llame a wscript.exe
-  y no a cmd o start
-* Revisa que lanzar_svfi.vbs exista en la carpeta
-
-PROBLEMA: SVFI no procesa y el log dice "No existe el archivo"
-CAUSA: Las rutas estan mal
-SOLUCION:
-
-* Ejecuta Config.bat (deberia arreglarlo)
-* Si no funciona:
-
-  * Abre config.txt y verifica SVFI_PATH y PRESET_PATH
-  * Abre lanzar_svfi.vbs y verifica la ruta de pythonw
-
-PROBLEMA: Una ruta no se encuentra (archivo no existe)
-CAUSA: Moviste algo o cambiaste de PC
-SOLUCION:
-
-* Ejecuta Config.bat (solucion preferida)
-* Si Config.bat no funciona:
-
-  * Edita config.txt a mano
-  * Edita lanzar_svfi.vbs a mano
-
-PROBLEMA: El archivo .py no funciona despues de editarlo
-CAUSA: Se guardo con BOM o codificacion incorrecta
-SOLUCION:
-
-* Abre el .py con Bloc de notas
-* Archivo > Guardar como
-* En "Codificacion" elige: UTF-8 (sin BOM)
-* Guarda
-
-PROBLEMA: El watcher no detecta el fin de SVFI
-CAUSA: svfi_output.txt no se genero o el watcher no arranco
-SOLUCION:
-
-* Verifica que svfi_output.txt exista en la carpeta
-* Cierra AE y vuelvelo a abrir
-* Revisa svfi_log.txt
-
----
-
-9. RECOMENDACIONES
-
----
-
-RECOMENDACION 1 - No ejecutes varias tareas a la vez
-
-* El sistema esta diseñado para procesar una tarea a la vez
-* Espera a que termine una tarea antes de iniciar otra
-* Ejecutar varias tareas puede provocar que los archivos
-  temporales o de salida se sobrescriban
-
-RECOMENDACION 2 - Manten una copia de seguridad
-
-* Una vez que todo funcione correctamente, copia la carpeta
-  completa del proyecto
-* Guardala en un lugar seguro
-* Si algo se rompe, puedes restaurar esa copia
-
-RECOMENDACION 3 - Revisa los logs cuando algo falle
-
-* svfi_log.txt: lo que hace el orquestador
-* vbs_log.txt: lo que hace el lanzador
-* Estos archivos pueden ayudarte a identificar el problema
-
-RECOMENDACION 4 - Usa Config.bat cuando cambies una ruta
-
-* Si mueves el proyecto
-* Si reinstalas Python
-* Si reinstalas SVFI
-* Si cambias la ubicacion del preset
-
-En lugar de modificar los archivos manualmente,
-ejecuta Config.bat y deja que actualice las rutas.
-
----
-
-## FIN DE LA GUIA
-
-Cualquier duda, revisa los logs. El 90% de los problemas
-estan ahi.
+* La versión 2 reemplaza SVFI_Panel.jsx, svfi_orquestador.py,
+  lanzar_svfi.vbs, Config.bat, Clean.bat y config.txt.
+  Puedes borrar la carpeta vieja "SVFI project".
+* Ya no hacen falta Python ni los permisos de carpeta (icacls).
+* La última carpeta de trabajo del panel viejo se detecta
+  automáticamente.

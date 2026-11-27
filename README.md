@@ -1,141 +1,57 @@
 # SVFI Pipeline
 
-Complete frame interpolation automation between After Effects and SVFI.
+Frame interpolation automation between After Effects and SVFI.
 
-A panel inside After Effects that renders, launches SVFI in the background, waits for it to finish, and reimports the processed clip automatically aligned. All with two clicks, without freezing the program, and without touching the command line.
-
-### ⚠️ Single-Task Pipeline
-
-This pipeline is intentionally built to process **one clip at a time**.
-
-This is not just a GPU limitation — it's how the pipeline is architected. The entire flow (`ae_svfi_input.txt` / `svfi_output.txt` / `carpeta_actual.txt` / preset) is bound to a single working folder and a single orchestration instance. Running two comps at once would overwrite the I/O files and corrupt the current job.
-
-To process another clip, wait for the current one to finish, then click `Render & Process` again.
+Select one or more layers, click **Render & Queue**, and keep working. After Effects renders only each layer's fragment, SVFI processes them in the background, and every interpolated clip is imported automatically in place of its original layer — even if the panel is closed.
 
 ## Features
 
-- Render and process with a single button. Select the composition, click, and the system does the rest.
-- Does not freeze After Effects. While SVFI processes, you can keep working normally.
-- Automatic task completion detection. The panel notifies you when SVFI finishes, so you don't have to watch it.
-- Aligned reimport. The processed clip appears right above the layer you had selected, aligned to the same start point.
-- Folder memory. Remembers the last work folder you used.
-- Automatic migration. Move to another PC or folder with a single .bat file.
-- Temporary file cleanup. One click and it removes everything no longer needed.
-- Diagnostic logs. If something fails, the .txt files tell you exactly where.
+- **Dockable panel** (CEP extension) with a real After Effects UI.
+- **No precomp needed.** The selected layer is rendered exactly as you see it in the comp: the panel solos it temporarily and renders only its in/out range. Your Solo switches, Work Area and Render Queue are restored afterwards.
+- **SVFI queue.** Render as many layers as you want in AE; SVFI processes them one by one outside AE (one at a time, so the GPU isn't overloaded).
+- **Auto-import (ON/OFF).** Each result is imported above its original layer, aligned in time, and the original layer is deleted (one Ctrl+Z restores it). If the original is a parent or a track matte, it is hidden instead of deleted.
+- **Works with the panel closed.** A small invisible background service runs the queue and imports results. It only touches After Effects when a result is ready, and if AE is busy (a dialog is open) it simply retries later.
+- **Clear errors.** If SVFI fails, the job is marked as an error with its reason and a log; it can be retried with one click.
+- **Your preset is never modified.** Each job uses its own copy, with its own output folder and the comp's real frame rate (keeping your preset's multiplier, e.g. x8).
+- **No Python, no .vbs, no special folder permissions.**
+- **Multiple layers in one click.** They are rendered in AE one after another, and AE returns to the comp when the batch is done.
+- **Launcher script.** `SVFI_Pipeline.jsx` (installed in File > Scripts) opens the panel, so it can be called from other script launchers (e.g. NyaUIPanel).
 
 ## Requirements
 
 - Windows 10 or 11
-- After Effects CC 2018 or higher
-- Python 3.8+ (with "Add to PATH" checked during installation)
+- After Effects 2019 (16.0) or newer
 - SVFI from Steam
-- "Clips RIFE" template created in your After Effects
+- An output module template called **"Clips RIFE"** (or another name, set in Settings)
 
 ## Installation
 
-1. Install Python from python.org and check the "Add Python to PATH" option.
-2. Install SVFI from Steam and open it once.
-3. Create a file named `steam_appid.txt` inside the SVFI folder with the exact content: `1692080`
-4. Create the "Clips RIFE" template in After Effects. Go to Edit > Templates > Output Module Templates. Duplicate an existing template and rename it to "Clips RIFE". Format: QuickTime, Codec: Animation or ProRes 422 HQ.
-5. Copy the project folder wherever you want. The recommended location is:
-   ```
-   C:\Program Files\Adobe\Adobe After Effects 2026\Support Files\Scripts\SVFI project
-   ```
-6. Run `Config.bat` and press Enter on the 3 prompts.
-7. **Grant folder permissions** (required, see below).
-8. Open After Effects and load `SVFI_Panel.jsx` from File > Scripts > Run Script File.
+1. Install SVFI from Steam and open it once.
+2. Create a file named `steam_appid.txt` inside the SVFI folder with the exact content: `1692080`
+3. Create the output module template in After Effects: **Edit > Templates > Output Module**. Duplicate an existing template and rename it **"Clips RIFE"**. Format: QuickTime, Codec: Animation or ProRes 422 HQ.
+4. Close After Effects and run **`SVFI Pipeline/INSTALL_Windows.bat`**. Windows asks for administrator permission once: it is only used to copy the launcher `SVFI_Pipeline.jsx` into the Scripts folder of every After Effects version found.
+5. Open After Effects: **Window > Extensions > SVFI Pipeline** or **File > Scripts > SVFI_Pipeline.jsx**.
+6. In **Settings**, choose the work folder, the path to `one_line_shot_args.exe` and, if you want, your own preset `.ini`.
 
-### ⚠️ Folder Permissions (Required)
+> Tip: point Settings to your own copy of the preset. Reinstalling replaces the bundled `mi_preset_svfi.ini`.
 
-After Effects' `Support Files\Scripts` folder is **read-only** for normal users, so the panel can't write the temporary files it needs to launch SVFI. If you don't grant permissions, the panel opens but nothing happens when you click "Render and Process" — no error, no log, nothing.
-
-**Open CMD as Administrator** and run this command (adjust the After Effects version if needed):
-
-```cmd
-icacls "C:\Program Files\Adobe\Adobe After Effects 2026\Support Files\Scripts\SVFI project" /grant "%USERNAME%":(OI)(CI)M /T
-```
-
-What it does:
-- `(OI)(CI)` → applies to files and subfolders
-- `M` → Modify (read + write + delete)
-- `/T` → recursive
-
-**To revert** (if you ever want to restore the default permissions):
-
-```cmd
-icacls "C:\Program Files\Adobe\Adobe After Effects 2026\Support Files\Scripts\SVFI project" /remove "%USERNAME%" /T
-```
+To uninstall, run `UNINSTALL_Windows.bat`.
 
 ## How to Use
 
-1. Open the SVFI Pipeline panel in After Effects.
-2. Click **"Select Folder..."** and choose where you want the temporary files.
-3. Apply **Time Remapping** to the clip you want to process.
-4. **Pre-compose the clip**, then open the precomposition.
-5. Click **"Render and Process"** and type a name for the file.
-6. Keep working in After Effects normally while SVFI processes.
-7. When the panel says **"SVFI finished, ready to load"**, select the original layer and click **"Load Result"**.
-8. The processed clip appears aligned right above the original layer.
+1. Apply **Time Remapping** (or whatever you need) to the clip.
+2. Select one or more layers and click **Render & Queue selected layers**. They are rendered in AE one after another, automatically.
+3. Keep working while SVFI processes the queue. Results are named `<layer>_SVFI.mov`.
+4. With **Auto-import ON**, each result replaces its layer automatically. With it OFF, press **Import** on the job when you want.
 
+## Files
 
-## Project Files
+- Settings and service status: `Documents\SVFIPipeline\`
+- Jobs: `<work folder>\SVFI_jobs\<job>\` — the render, the preset copy, `svfi_log.txt` and the SVFI result (`out\`).
+- **Clean** removes finished jobs from the list and deletes temporary files. Imported results are kept, because your project uses them.
 
-- SVFI_Panel.jsx: After Effects panel
-- svfi_orquestador.py: Python orchestrator
-- lanzar_svfi.vbs: VBS launcher (does not freeze AE)
-- config.txt: SVFI and preset paths
-- mi_preset_svfi.ini: SVFI configuration
-- Config.bat: Automatic migration
-- Clean.bat: Temporary file cleanup
-- LICENSE: GPL v3
-- README.md: This file
-- COMPLETE GUIDE SVFI PIPELINE ENGLISH.txt: Complete guide in English
-- GUIA COMPLETA SVFI PIPELINE ESPANOL.txt: Complete guide in Spanish
+A complete guide is included in English and Spanish (`Complete guide SVFI Pipeline English.txt`, `Guía completa SVFI Pipeline Español.txt`).
 
-## Manual Changes (only if necessary)
+## Debugging
 
-- After Effects template: if you use a template other than "Clips RIFE", edit SVFI_Panel.jsx and search for applyTemplate.
-- Paths: handled automatically by Config.bat. Manual editing only if it fails.
-- SVFI preset: to change the preset, generate a new one from the SVFI GUI and replace mi_preset_svfi.ini.
-
-For more details, see the complete guides in Spanish and English included in the project.
-
-## Troubleshooting
-
-Problem: The panel opens but nothing happens when I click "Render and Process".
-Solution: You skipped the folder permissions step. See [Folder Permissions](#-folder-permissions-required) above and run the `icacls` command as Administrator.
-
-Problem: The panel says "Template Clips RIFE not found".
-Solution: Create the template in After Effects or change the name in SVFI_Panel.jsx.
-
-Problem: After Effects freezes during rendering.
-Solution: Verify that SVFI_Panel.jsx calls wscript.exe and not cmd or start.
-
-Problem: SVFI does not process and the log says "File does not exist".
-Solution: Run Config.bat to regenerate the paths.
-
-Problem: A path is not found.
-Solution: Run Config.bat. If it fails, edit config.txt and lanzar_svfi.vbs manually.
-
-Problem: The watcher does not detect SVFI completion.
-Solution: Verify that svfi_output.txt exists in the work folder. Close After Effects and reopen it.
-
-More details in the complete guides.
-
-## Contributions
-
-This project is free software under the GNU General Public License v3.0. This means:
-
-- You can use, modify, and distribute the software freely.
-- You can make your own improvements.
-- You cannot close the source. If you distribute a modified version, it must remain GPL v3.
-
-If you find a bug or want to propose an improvement, open an issue or send a pull request.
-
-## License
-
-This project is licensed under the GNU General Public License v3.0. See the LICENSE file for details.
-
-Copyright (C) 2026 [GXNNR]
-
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+With After Effects open, the panel console is at `http://localhost:8102` and the service console at `http://localhost:8103` (Chrome).

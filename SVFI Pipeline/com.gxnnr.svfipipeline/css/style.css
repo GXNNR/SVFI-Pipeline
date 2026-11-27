@@ -1,0 +1,79 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+    background: #232323; color: #d6d6d6;
+    font: 12px "Segoe UI", -apple-system, sans-serif;
+    display: flex; flex-direction: column; gap: 8px; padding: 8px;
+    overflow-y: auto; user-select: none;
+}
+header { display: flex; align-items: center; gap: 8px; }
+.title { font-weight: 600; font-size: 14px; color: #fff; }
+.ver { font-weight: 400; font-size: 10px; color: #777; }
+.svc { margin-left: auto; display: flex; align-items: center; gap: 5px; font-size: 10px; color: #999; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #666; }
+.svc.ok .dot { background: #3fb950; }
+.svc.bad .dot { background: #e5534b; }
+
+.card { background: #2c2c2c; border: 1px solid #383838; border-radius: 6px; padding: 8px; }
+.card.grow { flex: 1 1 auto; min-height: 120px; display: flex; flex-direction: column; }
+.card-head { display: flex; align-items: center; gap: 6px; font-weight: 600; margin-bottom: 6px; }
+.spacer { flex: 1; }
+
+button {
+    font: inherit; color: #ddd; background: #3a3a3a; border: 1px solid #4a4a4a;
+    border-radius: 4px; padding: 5px 10px; cursor: pointer;
+}
+button:hover { background: #454545; }
+button:disabled { opacity: .5; cursor: default; }
+button.primary {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;
+    background: #2d6cdf; border-color: #3b7bf0; color: #fff; padding: 8px; font-weight: 600;
+}
+button.primary:hover { background: #3b7bf0; }
+button.primary svg { width: 14px; height: 14px; fill: currentColor; }
+button.ghost { background: transparent; }
+button.small { padding: 2px 8px; font-size: 11px; }
+
+.row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.lbl b { color: #3fb950; }
+.lbl b.off { color: #999; }
+.hint { font-size: 10px; color: #888; }
+
+.switch { position: relative; width: 32px; height: 18px; flex: 0 0 auto; }
+.switch input { display: none; }
+.slider { position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: #555; border-radius: 9px; cursor: pointer; transition: .15s; }
+.slider:before { content: ""; position: absolute; width: 14px; height: 14px; left: 2px; top: 2px; background: #fff; border-radius: 50%; transition: .15s; }
+.switch input:checked + .slider { background: #3fb950; }
+.switch input:checked + .slider:before { transform: translateX(14px); }
+
+.msg { margin-top: 8px; padding: 6px 8px; border-radius: 4px; background: #3a2a2a; color: #f0b0aa; font-size: 11px; }
+.msg.info { background: #263040; color: #a8c7f0; }
+.hidden { display: none; }
+
+.queue { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+.empty { color: #777; font-size: 11px; text-align: center; padding: 12px 0; }
+.job { background: #262626; border: 1px solid #353535; border-radius: 4px; padding: 6px; }
+.job-top { display: flex; align-items: center; gap: 6px; }
+.job-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #eee; }
+.job-sub { font-size: 10px; color: #888; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.job-sub.err { color: #e5534b; white-space: normal; }
+.job-actions { display: flex; gap: 4px; margin-top: 4px; }
+.badge { font-size: 9px; text-transform: uppercase; letter-spacing: .5px; padding: 1px 6px; border-radius: 8px; background: #444; color: #ccc; }
+.badge.queued { background: #444; }
+.badge.pendingRender { background: #4a3a66; color: #ddd; }
+.badge.rendering { background: #7a4fc4; color: #fff; }
+.badge.processing { background: #2d6cdf; color: #fff; }
+.badge.done { background: #8a6d1f; color: #fff; }
+.badge.imported { background: #2f7d43; color: #fff; }
+.badge.error { background: #a33a34; color: #fff; }
+.badge.cancelled { background: #555; color: #aaa; }
+
+details summary { cursor: pointer; font-weight: 600; }
+.field { margin-top: 8px; display: flex; flex-direction: column; gap: 3px; }
+.field label { font-size: 10px; color: #999; }
+.field.check label { font-size: 11px; color: #ccc; display: flex; align-items: center; gap: 6px; }
+.pick { display: flex; gap: 4px; }
+input[type=text], input:not([type]), input[type=number] {
+    flex: 1; min-width: 0; font: inherit; font-size: 11px; color: #ddd;
+    background: #1d1d1d; border: 1px solid #3a3a3a; border-radius: 3px; padding: 4px 6px;
+}

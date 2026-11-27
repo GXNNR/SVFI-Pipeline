@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SVFI Pipeline</title>
+<link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <header>
+    <div class="title">SVFI Pipeline <span class="ver" id="ver"></span></div>
+    <div class="svc" id="svc" title="Background service"><span class="dot"></span><span id="svcText">...</span></div>
+  </header>
+
+  <section class="card">
+    <button id="btnRender" class="primary">
+      <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <span>Render &amp; Queue selected layers</span>
+    </button>
+    <div class="row toggle-row">
+      <label class="switch"><input type="checkbox" id="autoImport"><span class="slider"></span></label>
+      <div>
+        <div class="lbl">Auto-import <b id="autoState">ON</b></div>
+        <div class="hint">Imports each result above its layer, even with this panel closed.</div>
+      </div>
+    </div>
+    <div id="msg" class="msg hidden"></div>
+  </section>
+
+  <section class="card grow">
+    <div class="card-head">
+      <span>Queue</span>
+      <span class="spacer"></span>
+      <button class="ghost small" id="btnOpenFolder" title="Open work folder">Folder</button>
+      <button class="ghost small" id="btnClean" title="Remove finished jobs from the list and delete temp files">Clean</button>
+    </div>
+    <div id="queue" class="queue"></div>
+  </section>
+
+  <details class="card" id="settings">
+    <summary>Settings</summary>
+    <div class="field">
+      <label>Work folder</label>
+      <div class="pick"><input id="workFolder" readonly><button class="ghost small" data-pick="workFolder">...</button></div>
+    </div>
+    <div class="field">
+      <label>SVFI (one_line_shot_args.exe)</label>
+      <div class="pick"><input id="svfiPath" readonly><button class="ghost small" data-pick="svfiPath">...</button></div>
+    </div>
+    <div class="field">
+      <label>Preset .ini</label>
+      <div class="pick"><input id="presetPath" readonly><button class="ghost small" data-pick="presetPath">...</button></div>
+    </div>
+    <div class="field">
+      <label>Output module template</label>
+      <input id="template">
+    </div>
+    <div class="field check">
+      <label><input type="checkbox" id="deleteOriginal"> Delete the original layer after importing</label>
+    </div>
+    <div class="field">
+      <label>Max SVFI time per clip (minutes)</label>
+      <input id="maxMinutes" type="number" min="5" max="1440">
+    </div>
+  </details>
+
+<script src="./js/common.js"></script>
+<script src="./js/panel.js"></script>
+</body>
+</html>
